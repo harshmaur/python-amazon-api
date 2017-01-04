@@ -36,7 +36,7 @@ from amazonproduct.utils import running_on_gae, REQUIRED_KEYS
 from amazonproduct.processors import ITEMS_PAGINATOR, BaseProcessor
 
 USER_AGENT = ('python-amazon-product-api/%s '
-    '+http://pypi.python.org/pypi/python-amazon-product-api/' % VERSION)
+              '+http://pypi.python.org/pypi/python-amazon-product-api/' % VERSION)
 
 
 #: Hosts used by Amazon for normal/XSLT operations
@@ -48,7 +48,7 @@ HOSTS = {
     'de': 'webservices.amazon.de',
     'es': 'webservices.amazon.es',
     'fr': 'webservices.amazon.fr',
-    # 'in': 'webservices.amazon.in',
+    'in': 'webservices.amazon.in',
     'it': 'webservices.amazon.it',
     'jp': 'webservices.amazon.jp',
     'uk': 'webservices.amazon.co.uk',
@@ -72,7 +72,7 @@ class API (object):
 
     Now you can use this class to do things like this (note lxml must be
     installed for this to work) ::
-        
+
         from amazonproduct import API
         api = API(locale='us')
         root = api.item_lookup('0136042597', IdType='ISBN',
@@ -86,8 +86,8 @@ class API (object):
     TIMEOUT = 5  #: timeout in seconds
 
     def __init__(self, access_key_id=None, secret_access_key=None, locale=None,
-             associate_tag=None, processor='amazonproduct.processors.objectify',
-             cfg=None):
+                 associate_tag=None, processor='amazonproduct.processors.objectify',
+                 cfg=None):
         """
         .. versionchanged:: 0.2.6
            Passing parameters ``access_key_id``, ``secret_access_key`` and
@@ -104,7 +104,7 @@ class API (object):
 
         if any([access_key_id, secret_access_key, associate_tag]):
             warnings.warn('Please use a config file!', DeprecationWarning,
-                stacklevel=2)
+                          stacklevel=2)
 
         self.access_key = access_key_id
         self.secret_key = secret_access_key
@@ -201,17 +201,19 @@ class API (object):
         # Be nice and wait for some time
         # before submitting the next request
         delta = datetime.now() - self.last_call
-        throttle = timedelta(seconds=1/self.REQUESTS_PER_SECOND)
+        throttle = timedelta(seconds=1 / self.REQUESTS_PER_SECOND)
         if delta < throttle:
-            wait = throttle-delta
-            sleep(wait.seconds+wait.microseconds/1000000.0) # pragma: no cover
+            wait = throttle - delta
+            sleep(wait.seconds + wait.microseconds /
+                  1000000.0)  # pragma: no cover
         self.last_call = datetime.now()
 
         response = requests.get(url, stream=True, headers={
             'User-Agent': USER_AGENT
         })
         # https://github.com/kennethreitz/requests/issues/2155
-        response.raw.read = functools.partial(response.raw.read, decode_content=True)
+        response.raw.read = functools.partial(
+            response.raw.read, decode_content=True)
         return response.raw
 
     def _reg(self, key):
@@ -582,7 +584,7 @@ class API (object):
         item_id = ','.join(ids)
         try:
             return self.call(Operation='SimilarityLookup',
-                              ItemId=item_id, **params)
+                             ItemId=item_id, **params)
         except AWSError:
             e = sys.exc_info()[1]  # Python 2/3 compatible
 
@@ -636,7 +638,7 @@ class API (object):
             Physics (3283)
             Social Science (3143)
             Zoology (3301)
-        
+
         Returning the items associated with children's science books produces a
         much more targeted result than a search based at the level of books.
 
@@ -693,8 +695,8 @@ class API (object):
         """
         try:
             return self.call(Operation='BrowseNodeLookup',
-                    BrowseNodeId=browse_node_id, ResponseGroup=response_group,
-                    **params)
+                             BrowseNodeId=browse_node_id, ResponseGroup=response_group,
+                             **params)
         except AWSError:
             e = sys.exc_info()[1]  # Python 2/3 compatible
 
@@ -712,8 +714,8 @@ class API (object):
         # TODO ListItemId
         if type(items) == dict:
             for no, (item_id, quantity) in enumerate(items.items()):
-                result['Item.%i.%s' % (no+1, key)] = item_id
-                result['Item.%i.Quantity' % (no+1)] = quantity
+                result['Item.%i.%s' % (no + 1, key)] = item_id
+                result['Item.%i.Quantity' % (no + 1)] = quantity
         return result
 
     def cart_create(self, items, **params):
@@ -934,4 +936,3 @@ class API (object):
 
     #: MultiOperation is supported outside this API
     multi_operation = None
-
